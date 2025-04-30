@@ -1,5 +1,3 @@
-# .github/workflows/ci.yml
-
 name: Build OTA Binary
 
 on:
@@ -13,33 +11,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
 
-    - name: Setup Arduino CLI
-      uses: arduino/setup-arduino-cli@v1
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
 
-    - name: Install ESP32 core
-      run: |
-        arduino-cli core update-index
-        arduino-cli core install esp32:esp32
+      - name: Install ESP32 core
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
 
-    - name: Compile sketch
-      run: |
-        arduino-cli compile \
-          --fqbn esp32:esp32:esp32 sketches/automatic.ino
+      - name: Install required libraries
+        run: |
+          arduino-cli lib update-index
+          arduino-cli lib install "Adafruit SSD1306"
+          arduino-cli lib install "Adafruit GFX Library"
+          arduino-cli lib install "Adafruit HTU21DF Library"
+          arduino-cli lib install "Adafruit NeoPixel"
 
-    - name: Publish latest.bin
-      run: |
-        # 1) Localiza cualquier .bin dentro del build
-        BIN=$(find sketches/automatic.ino/build -type f -name "*.bin" | head -n1)
-        echo "📦 BIN encontrado en: $BIN"
-        # 2) Asegura la carpeta firmware/
-        mkdir -p firmware
-        # 3) Copia y commitea
-        cp "$BIN" firmware/latest.bin
-        git config user.name "github-actions[bot]"
-        git config user.email "actions@github.com"
-        git add firmware/latest.bin
-        git commit -m "🔨 Build latest.bin"
-        git push
+      - name: Compile sketch into firmware/
+        run: |
+          mkdir -p firmware
+          arduino-cli compile \
+            --fqbn esp32:esp32:esp32 \
+            --output-dir firmware \
+            sketches/automatic.ino
+
+      - name: Publish latest.bin
+        run: |
+          # Renombra el .bin generado a latest.bin
+          mv firmware/*.bin firmware/latest.bin
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add firmware/latest.bin
+          git commit -m "🔨 Build latest.bin"
+          git push
