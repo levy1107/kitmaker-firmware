@@ -6,12 +6,16 @@ on:
       - "sketches/**"
       - ".github/workflows/ci.yml"
 
+# ⬇️  Permite que el job escriba en el repositorio
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout
       uses: actions/checkout@v3
       with:
         persist-credentials: true
@@ -32,13 +36,12 @@ jobs:
                                  "Adafruit HTU21DF Library" \
                                  "Adafruit NeoPixel"
 
-    # Arduino-CLI necesita carpeta y .ino con el mismo nombre
     - name: Prepare sketch
       run: |
         mkdir -p build/automatic
         cp sketches/automatic.ino build/automatic/automatic.ino
 
-    - name: Compile & export .bin
+    - name: Compile & export bin
       run: |
         arduino-cli compile \
           --fqbn esp32:esp32:esp32 \
@@ -46,17 +49,16 @@ jobs:
           build/automatic
 
     - name: Publish latest.bin
+      env:
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         mkdir -p firmware
-        # busquemos recursivamente el primer .bin
         BIN=$(find build/automatic -type f -name "*.bin" | head -n1)
-        echo "Bin encontrado: $BIN"
-        if [ -z "$BIN" ]; then
-          echo "❌ No se generó .bin"; exit 1
-        fi
+        echo "Binario encontrado: $BIN"
         cp "$BIN" firmware/latest.bin
         git config user.name  "github-actions[bot]"
         git config user.email "actions@github.com"
         git add firmware/latest.bin
         git commit -m "🔨 Build latest.bin"
-        git push
+        # Push autenticado con el token
+        git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
