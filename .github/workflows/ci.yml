@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout repo
       uses: actions/checkout@v3
       with:
         persist-credentials: true
@@ -24,7 +24,7 @@ jobs:
         arduino-cli core update-index
         arduino-cli core install esp32:esp32
 
-    - name: Install required libs
+    - name: Install libraries
       run: |
         arduino-cli lib update-index
         arduino-cli lib install "Adafruit SSD1306" \
@@ -32,28 +32,27 @@ jobs:
                                  "Adafruit HTU21DF Library" \
                                  "Adafruit NeoPixel"
 
-    # —— preparar carpeta con mismo nombre que el .ino ——
-    - name: Prepare sketch dir
+    # Arduino-CLI necesita carpeta y .ino con el mismo nombre
+    - name: Prepare sketch
       run: |
         mkdir -p build/automatic
         cp sketches/automatic.ino build/automatic/automatic.ino
 
-    # —— compilar y exportar binarios ——
-    - name: Compile sketch
+    - name: Compile & export .bin
       run: |
         arduino-cli compile \
           --fqbn esp32:esp32:esp32 \
           --export-binaries \
           build/automatic
 
-    # —— copiar primer .bin encontrado a firmware/latest.bin ——
     - name: Publish latest.bin
       run: |
         mkdir -p firmware
-        BIN=$(find build/automatic -maxdepth 1 -name "*.bin" | head -n1)
-        echo "Binario => $BIN"
+        # busquemos recursivamente el primer .bin
+        BIN=$(find build/automatic -type f -name "*.bin" | head -n1)
+        echo "Bin encontrado: $BIN"
         if [ -z "$BIN" ]; then
-          echo "❌ No se generó ningún .bin"; exit 1
+          echo "❌ No se generó .bin"; exit 1
         fi
         cp "$BIN" firmware/latest.bin
         git config user.name  "github-actions[bot]"
