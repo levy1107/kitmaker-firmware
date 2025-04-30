@@ -1,5 +1,8 @@
+# .github/workflows/ci.yml
+
 name: Build OTA Binary
 
+# Se dispara cada vez que cambias el sketch
 on:
   push:
     paths:
@@ -10,27 +13,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Setup Arduino CLI
-        uses: arduino/setup-arduino-cli@v1
+    - name: Setup Arduino CLI
+      uses: arduino/setup-arduino-cli@v1
 
-      - name: Install ESP32 core
-        run: |
-          arduino-cli core update-index
-          arduino-cli core install esp32:esp32
+    - name: Install ESP32 core
+      run: |
+        arduino-cli core update-index
+        arduino-cli core install esp32:esp32
 
-      - name: Compile sketch
-        run: |
-          arduino-cli compile \
-            --fqbn esp32:esp32:esp32 sketches/automatic.ino
+    - name: Compile sketch
+      run: |
+        arduino-cli compile \
+          --fqbn esp32:esp32:esp32 sketches/automatic.ino
 
-      - name: Publish latest.bin
-        run: |
-          BIN=$(ls $(pwd)/sketches/automatic.ino/build/*.bin | head -n1)
-          cp "$BIN" firmware/latest.bin
-          git config user.name "github-actions[bot]"
-          git config user.email "actions@github.com"
-          git add firmware/latest.bin
-          git commit -m "🔨 Build latest.bin"
-          git push
+    - name: Publish latest.bin
+      run: |
+        # 1) Encuentra el .bin compilado
+        BIN=$(find sketches/automatic.ino/build -type f -name "*.bin" | head -n1)
+        echo "📦 BIN encontrado en: $BIN"
+
+        # 2) Asegura que exista firmware/
+        mkdir -p firmware
+
+        # 3) Copia y commitea el nuevo latest.bin
+        cp "$BIN" firmware/latest.bin
+        git config user.name "github-actions[bot]"
+        git config user.email "actions@github.com"
+        git add firmware/latest.bin
+        git commit -m "🔨 Build latest.bin"
+        git push
