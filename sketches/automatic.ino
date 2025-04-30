@@ -23,7 +23,7 @@ const char* password     = "P4L4T3cs";
 const char* FIRMWARE_URL =
   "https://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin";
 // ——————————————————————
-
+ 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_HTU21DF   htu;
 Adafruit_NeoPixel  pixels(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -60,10 +60,10 @@ void setup() {
     while (1);
   }
 
-  // Init NeoPixels (amarillo)
+  // Init NeoPixels (azul)
   pixels.begin();
   for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-    pixels.setPixelColor(i, pixels.Color(255, 255, 0)); // Amarillo
+    pixels.setPixelColor(i, pixels.Color(0, 0, 255)); // Azul
   }
   pixels.show();
 
