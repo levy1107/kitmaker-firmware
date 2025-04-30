@@ -60,10 +60,10 @@ void setup() {
     while (1);
   }
 
-  // Init NeoPixels (verde)
+  // Init NeoPixels (amarillo)
   pixels.begin();
   for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-    pixels.setPixelColor(i, pixels.Color(0, 255, 0)); // Verde
+    pixels.setPixelColor(i, pixels.Color(255, 255, 0)); // Amarillo
   }
   pixels.show();
 
