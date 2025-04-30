@@ -15,6 +15,8 @@
 #define NEOPIXEL_PIN    27
 #define NEOPIXEL_COUNT  4
 #define BUTTON_PIN      15
+#define BUZZER_PIN      12
+#define RIGHT_BUTTON_PIN 13
 // ——————————————————
 
 // ————— Wi-Fi & OTA —————
@@ -23,7 +25,7 @@ const char* password     = "P4L4T3cs";
 const char* FIRMWARE_URL =
   "https://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin";
 // ——————————————————————
- 
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_HTU21DF htu;
 Adafruit_NeoPixel pixels(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -44,6 +46,8 @@ void showMessage(const char* line1, const char* line2 = nullptr, int textSize = 
 void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(RIGHT_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(BUZZER_PIN, OUTPUT);
   Wire.begin();
 
   // Init OLED
@@ -130,5 +134,11 @@ void loop() {
     checking = false;
   }
 
-  delay(2000);
+  // Accionar buzzer con botón derecho
+  if (digitalRead(RIGHT_BUTTON_PIN) == LOW) {
+    tone(BUZZER_PIN, 1000, 3000); // Frecuencia de 1000 Hz durante 3 segundos
+    delay(3000); // Espera mientras el buzzer suena
+  }
+
+  delay(200);
 }
