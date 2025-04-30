@@ -1,3 +1,5 @@
+# .github/workflows/ci.yml
+
 name: Build OTA Binary
 
 on:
@@ -32,17 +34,20 @@ jobs:
           arduino-cli lib install "Adafruit HTU21DF Library"
           arduino-cli lib install "Adafruit NeoPixel"
 
-      - name: Compile sketch into firmware/
+      - name: Compile all .ino in sketches/ into firmware/
         run: |
           mkdir -p firmware
-          arduino-cli compile \
-            --fqbn esp32:esp32:esp32 \
-            --output-dir firmware \
-            sketches/automatic.ino
+          for sketch in sketches/*.ino; do
+            echo "📦 Compiling $sketch"
+            arduino-cli compile \
+              --fqbn esp32:esp32:esp32 \
+              "$sketch" \
+              --output-dir firmware
+          done
 
       - name: Publish latest.bin
         run: |
-          # Renombra el .bin generado a latest.bin
+          # Renombramos el .bin recién compilado a latest.bin
           mv firmware/*.bin firmware/latest.bin
           git config user.name "github-actions[bot]"
           git config user.email "actions@github.com"
