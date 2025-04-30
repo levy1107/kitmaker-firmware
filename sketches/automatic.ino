@@ -87,7 +87,7 @@ void loop() {
   static unsigned long lastDebounceTime = 0;
   static int lastButtonState = HIGH;
 
-  int reading = digitalRead(LEFT_BUTTON_PIN);
+  int reading = digitalRead(RIGHT_BUTTON_PIN);
   if (reading != lastButtonState) {
     lastDebounceTime = millis();
   }
@@ -149,12 +149,6 @@ void loop() {
     }
   } else {
     checking = false;
-  }
-
-  // Accionar buzzer con botón derecho
-  if (digitalRead(RIGHT_BUTTON_PIN) == LOW) {
-    tone(BUZZER_PIN, 1000, 3000); // Frecuencia de 1000 Hz durante 3 segundos
-    delay(3000); // Espera mientras el buzzer suena
   }
 
   delay(200);
