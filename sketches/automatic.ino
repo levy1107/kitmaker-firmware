@@ -1,4 +1,3 @@
-// sketch: automatic.ino
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <Update.h>
@@ -8,7 +7,7 @@
 #include <Adafruit_HTU21DF.h>
 #include <Adafruit_NeoPixel.h>
 
-// ————— Configuración de hardware —————
+// ————— Hardware —————
 #define SCREEN_WIDTH    128
 #define SCREEN_HEIGHT   64
 #define OLED_RESET      -1
@@ -16,14 +15,14 @@
 #define NEOPIXEL_PIN    27
 #define NEOPIXEL_COUNT  4
 #define BUTTON_PIN      15
-// ————————————————————————————————
+// ——————————————————
 
-// ————— Wi-Fi y URL OTA —————
-const char* ssid            = "Polotics";
-const char* password        = "P4L4T3cs";
-const char* FIRMWARE_URL    =
+// ————— Wi-Fi y OTA URL —————
+const char* ssid         = "Polotics";
+const char* password     = "P4L4T3cs";
+const char* FIRMWARE_URL =
   "https://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin";
-// ——————————————————————————
+// ——————————————————————
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_HTU21DF   htu;
@@ -34,17 +33,31 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   Wire.begin();
 
-  if (!htu.begin()) { Serial.println("Error: HTU21D"); while (1); }
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { Serial.println("Error: OLED"); while (1); }
-  display.clearDisplay(); display.display();
+  // Sensor HTU21D
+  if (!htu.begin()) {
+    Serial.println("Error: HTU21D");
+    while (true);
+  }
 
+  // OLED
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("Error: OLED");
+    while (true);
+  }
+  display.clearDisplay();
+  display.display();
+
+  // NeoPixels (rojo)
   pixels.begin();
-  for (int i = 0; i < NEOPIXEL_COUNT; i++)
+  for (int i = 0; i < NEOPIXEL_COUNT; i++) {
     pixels.setPixelColor(i, pixels.Color(255, 0, 0));
+  }
   pixels.show();
 
+  // Conexión Wi-Fi
   WiFi.begin(ssid, password);
-  Serial.print("WiFi…");
+  Serial.print("Conectando a ");
+  Serial.print(ssid);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -56,27 +69,26 @@ void loop() {
   static unsigned long pressStart = 0;
   static bool checking = false;
 
-  // Lee sensores
+  // Leer sensores
   float temp   = htu.readTemperature();
   float hum    = htu.readHumidity();
   int   ldrRaw = analogRead(LDR_PIN);
 
-  // Muestra en OLED
+  // Mostrar en OLED
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0,  0); display.printf("Temp: %.2f C", temp);
-  display.setCursor(0, 10); display.printf("Hum : %.2f %%", hum);
-  display.setCursor(0, 20); display.printf("LDR : %4d", ldrRaw);
+  display.setCursor(0,  0); display.printf("T:%.1fC H:%.1f%%", temp, hum);
+  display.setCursor(0, 10); display.printf("LDR:%4d", ldrRaw);
   display.display();
 
-  // Si el botón PIN15 está presionado 5 s, dispara OTA pull
+  // Si mantienes pulsado BUTTON_PIN 5s haz pull-OTA
   if (digitalRead(BUTTON_PIN) == LOW) {
     if (!checking) {
-      checking = true;
+      checking   = true;
       pressStart = millis();
     } else if (millis() - pressStart >= 5000) {
-      Serial.println("Botón 5s: buscando update...");
+      Serial.println("OTA pull: buscando update...");
       HTTPClient http;
       http.begin(FIRMWARE_URL);
       if (http.GET() == HTTP_CODE_OK) {
@@ -85,6 +97,7 @@ void loop() {
           WiFiClient *stream = http.getStreamPtr();
           size_t written = Update.writeStream(*stream);
           if (written == len && Update.end()) {
+            Serial.println("OTA OK, reiniciando...");
             ESP.restart();
           }
         }
