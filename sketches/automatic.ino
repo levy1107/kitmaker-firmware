@@ -60,10 +60,10 @@ void setup() {
     while (1);
   }
 
-  // Init NeoPixels (rosa)
+  // Init NeoPixels (verde)
   pixels.begin();
   for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-    pixels.setPixelColor(i, pixels.Color(255, 20, 147)); // Rosa
+    pixels.setPixelColor(i, pixels.Color(0, 255, 0)); // Verde
   }
   pixels.show();
 
