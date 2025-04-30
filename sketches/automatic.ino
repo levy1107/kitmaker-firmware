@@ -17,6 +17,7 @@
 #define BUTTON_PIN      15
 #define BUZZER_PIN      12
 #define RIGHT_BUTTON_PIN 13
+#define LEFT_BUTTON_PIN 0
 // ——————————————————
 
 // ————— Wi-Fi & OTA —————
@@ -47,6 +48,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(RIGHT_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(LEFT_BUTTON_PIN, INPUT_PULLUP);
   pinMode(BUZZER_PIN, OUTPUT);
   Wire.begin();
 
@@ -81,24 +83,30 @@ void setup() {
 void loop() {
   static unsigned long pressStart = 0;
   static bool checking = false;
+  static int pressCount = 0;
+  static unsigned long lastDebounceTime = 0;
+  static int lastButtonState = HIGH;
+
+  int reading = digitalRead(LEFT_BUTTON_PIN);
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();
+  }
+  if ((millis() - lastDebounceTime) > 50) {
+    if (reading != HIGH && lastButtonState == HIGH) {
+      pressCount = (pressCount + 1) % 5;
+      uint32_t colors[] = {pixels.Color(255, 0, 0), pixels.Color(0, 255, 0), pixels.Color(0, 0, 255), pixels.Color(255, 255, 0), pixels.Color(0, 0, 0)};
+      for (int i = 0; i < NEOPIXEL_COUNT; i++) {
+        pixels.setPixelColor(i, colors[pressCount]);
+      }
+      pixels.show();
+    }
+  }
+  lastButtonState = reading;
 
   // Leer sensores
   float temp   = htu.readTemperature();
   float hum    = htu.readHumidity();
   int   ldrRaw = analogRead(LDR_PIN);
-
-  // Neopixels según temperatura
-  uint32_t neoColor;
-  if (temp <= 30) neoColor = pixels.Color(0, 0, 255); // Azul
-  else if (temp >= 35) neoColor = pixels.Color(255, 0, 0); // Rojo
-  else {
-    int green = (int)(255 - ((temp - 30) * 255 / 5));
-    neoColor = pixels.Color(255, green, 127 - green/2);
-  }
-  for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-    pixels.setPixelColor(i, neoColor);
-  }
-  pixels.show();
 
   // Mostrar datos en OLED
   display.clearDisplay();
