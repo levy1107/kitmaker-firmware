@@ -97,16 +97,15 @@ void loop() {
 
   // Leer sensores
   float temp   = htu.readTemperature();
-  float hum    = htu.readHumidity();
   int   ldrRaw = analogRead(LDR_PIN);
+  int ldrPercent = map(ldrRaw, 0, 4095, 0, 100); // Mapeo de valor LDR de 0 a 100%
 
   // Mostrar datos en OLED
   display.clearDisplay();
-  display.setTextSize(1);
+  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);   display.printf("T: %.1f C", temp);
-  display.setCursor(0, 10);  display.printf("H: %.1f %%", hum);
-  display.setCursor(0, 20);  display.printf("LDR: %4d", ldrRaw);
+  display.setCursor(0, 0);   display.printf("T: %.1fC", temp);
+  display.setCursor(0, 32);  display.printf("LDR: %d%%", ldrPercent);
   display.display();
 
   if (temp > 35) {
@@ -153,4 +152,3 @@ void loop() {
 
   delay(200);
 }
-
