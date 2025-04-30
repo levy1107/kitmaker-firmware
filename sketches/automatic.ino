@@ -47,10 +47,10 @@ void setup() {
   display.clearDisplay();
   display.display();
 
-  // NeoPixels (rojo)
+  // NeoPixels (verde)
   pixels.begin();
   for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-    pixels.setPixelColor(i, pixels.Color(255, 0, 0));
+    pixels.setPixelColor(i, pixels.Color(0, 255, 0));
   }
   pixels.show();
 
@@ -111,3 +111,4 @@ void loop() {
 
   delay(2000);
 }
+
