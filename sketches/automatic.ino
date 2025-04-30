@@ -15,9 +15,7 @@
 #define NEOPIXEL_PIN    27
 #define NEOPIXEL_COUNT  4
 #define BUTTON_PIN      15
-#define BUZZER_PIN      12
-#define RIGHT_BUTTON_PIN 13
-#define LEFT_BUTTON_PIN 0
+#define BUTTON_COLOR_PIN 0
 // ——————————————————
 
 // ————— Wi-Fi & OTA —————
@@ -47,9 +45,7 @@ void showMessage(const char* line1, const char* line2 = nullptr, int textSize = 
 void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  pinMode(RIGHT_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(LEFT_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(BUTTON_COLOR_PIN, INPUT_PULLUP);
   Wire.begin();
 
   // Init OLED
@@ -83,23 +79,17 @@ void setup() {
 void loop() {
   static unsigned long pressStart = 0;
   static bool checking = false;
-  static int pressCount = 0;
-  static unsigned long lastDebounceTime = 0;
   static int lastButtonState = HIGH;
+  int reading = digitalRead(BUTTON_COLOR_PIN);
+  static int pressCount = 0;
 
-  int reading = digitalRead(RIGHT_BUTTON_PIN);
-  if (reading != lastButtonState) {
-    lastDebounceTime = millis();
-  }
-  if ((millis() - lastDebounceTime) > 50) {
-    if (reading != HIGH && lastButtonState == HIGH) {
-      pressCount = (pressCount + 1) % 5;
-      uint32_t colors[] = {pixels.Color(255, 0, 0), pixels.Color(0, 255, 0), pixels.Color(0, 0, 255), pixels.Color(255, 255, 0), pixels.Color(0, 0, 0)};
-      for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-        pixels.setPixelColor(i, colors[pressCount]);
-      }
-      pixels.show();
+  if (reading == LOW && lastButtonState == HIGH) {
+    pressCount = (pressCount + 1) % 5;
+    uint32_t colors[] = {pixels.Color(255,0,0), pixels.Color(0,255,0), pixels.Color(0,0,255), pixels.Color(255,255,0), pixels.Color(0,0,0)};
+    for (int i = 0; i < NEOPIXEL_COUNT; i++) {
+      pixels.setPixelColor(i, colors[pressCount]);
     }
+    pixels.show();
   }
   lastButtonState = reading;
 
