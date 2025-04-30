@@ -25,8 +25,8 @@ const char* FIRMWARE_URL =
 // ——————————————————————
  
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-Adafruit_HTU21DF   htu;
-Adafruit_NeoPixel  pixels(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_HTU21DF htu;
+Adafruit_NeoPixel pixels(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 void showMessage(const char* line1, const char* line2 = nullptr, int textSize = 2) {
   display.clearDisplay();
@@ -60,10 +60,10 @@ void setup() {
     while (1);
   }
 
-  // Init NeoPixels (azul)
+  // Init NeoPixels (amarillo)
   pixels.begin();
   for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-    pixels.setPixelColor(i, pixels.Color(0, 0, 255)); // Azul
+    pixels.setPixelColor(i, pixels.Color(255, 150, 0)); // Amarillo
   }
   pixels.show();
 
@@ -132,3 +132,4 @@ void loop() {
 
   delay(2000);
 }
+
