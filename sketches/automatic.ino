@@ -111,6 +111,10 @@ void loop() {
 
   if (temp > 35) {
     tone(BUZZER_PIN, 1000, 1000); // Active buzzer using tone (frequency, duration)
+    for (int i = 0; i < NEOPIXEL_COUNT; i++) {
+      pixels.setPixelColor(i, pixels.Color(255,0,0)); // Set all pixels to red
+    }
+    pixels.show();
   }
 
   // Detección de botón largo para OTA pull
@@ -149,3 +153,4 @@ void loop() {
 
   delay(200);
 }
+
