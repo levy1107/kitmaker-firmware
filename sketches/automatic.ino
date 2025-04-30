@@ -64,12 +64,8 @@ void setup() {
     while (1);
   }
 
-  // Init NeoPixels (amarillo)
+  // Init NeoPixels
   pixels.begin();
-  for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-    pixels.setPixelColor(i, pixels.Color(255, 150, 0)); // Amarillo
-  }
-  pixels.show();
 
   // Conecta Wi-Fi
   showMessage("Conectando", "a Wi-Fi", 2);
@@ -90,6 +86,19 @@ void loop() {
   float temp   = htu.readTemperature();
   float hum    = htu.readHumidity();
   int   ldrRaw = analogRead(LDR_PIN);
+
+  // Neopixels según temperatura
+  uint32_t neoColor;
+  if (temp <= 30) neoColor = pixels.Color(0, 0, 255); // Azul
+  else if (temp >= 35) neoColor = pixels.Color(255, 0, 0); // Rojo
+  else {
+    int green = (int)(255 - ((temp - 30) * 255 / 5));
+    neoColor = pixels.Color(255, green, 127 - green/2);
+  }
+  for (int i = 0; i < NEOPIXEL_COUNT; i++) {
+    pixels.setPixelColor(i, neoColor);
+  }
+  pixels.show();
 
   // Mostrar datos en OLED
   display.clearDisplay();
