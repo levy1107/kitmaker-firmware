@@ -2,11 +2,11 @@
 
 name: Build OTA Binary
 
-# Se dispara cada vez que cambias el sketch
 on:
   push:
     paths:
       - 'sketches/**'
+      - '.github/workflows/ci.yml'
 
 jobs:
   build:
@@ -31,14 +31,12 @@ jobs:
 
     - name: Publish latest.bin
       run: |
-        # 1) Encuentra el .bin compilado
+        # 1) Localiza cualquier .bin dentro del build
         BIN=$(find sketches/automatic.ino/build -type f -name "*.bin" | head -n1)
         echo "📦 BIN encontrado en: $BIN"
-
-        # 2) Asegura que exista firmware/
+        # 2) Asegura la carpeta firmware/
         mkdir -p firmware
-
-        # 3) Copia y commitea el nuevo latest.bin
+        # 3) Copia y commitea
         cp "$BIN" firmware/latest.bin
         git config user.name "github-actions[bot]"
         git config user.email "actions@github.com"
