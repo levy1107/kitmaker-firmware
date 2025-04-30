@@ -11,47 +11,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: true
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: true
 
-      - name: Setup Arduino CLI
-        uses: arduino/setup-arduino-cli@v1
+    - name: Setup Arduino-CLI
+      uses: arduino/setup-arduino-cli@v1
 
-      - name: Install ESP32 core
-        run: |
-          arduino-cli core update-index
-          arduino-cli core install esp32:esp32
+    - name: Install ESP32 core
+      run: |
+        arduino-cli core update-index
+        arduino-cli core install esp32:esp32
 
-      - name: Install required libraries
-        run: |
-          arduino-cli lib update-index
-          arduino-cli lib install "Adafruit SSD1306"
-          arduino-cli lib install "Adafruit GFX Library"
-          arduino-cli lib install "Adafruit HTU21DF Library"
-          arduino-cli lib install "Adafruit NeoPixel"
+    - name: Install required libs
+      run: |
+        arduino-cli lib update-index
+        arduino-cli lib install "Adafruit SSD1306" \
+                                 "Adafruit GFX Library" \
+                                 "Adafruit HTU21DF Library" \
+                                 "Adafruit NeoPixel"
 
-      # Arduino-CLI necesita que la carpeta y el .ino tengan el mismo nombre
-      - name: Prepare sketch folder
-        run: |
-          mkdir -p build/automatic
-          cp sketches/automatic.ino build/automatic/automatic.ino
+    # —— preparar carpeta con mismo nombre que el .ino ——
+    - name: Prepare sketch dir
+      run: |
+        mkdir -p build/automatic
+        cp sketches/automatic.ino build/automatic/automatic.ino
 
-      - name: Compile sketch and export .bin
-        run: |
-          mkdir -p firmware
-          arduino-cli compile \
-            --fqbn esp32:esp32:esp32 \
-            --export-binaries \
-            --output-dir firmware \
-            build/automatic
+    # —— compilar y exportar binarios ——
+    - name: Compile sketch
+      run: |
+        arduino-cli compile \
+          --fqbn esp32:esp32:esp32 \
+          --export-binaries \
+          build/automatic
 
-      - name: Rename and commit latest.bin
-        run: |
-          mv firmware/*.bin firmware/latest.bin
-          git config user.name "github-actions[bot]"
-          git config user.email "actions@github.com"
-          git add firmware/latest.bin
-          git commit -m "🔨 Build latest.bin"
-          git push
+    # —— copiar primer .bin encontrado a firmware/latest.bin ——
+    - name: Publish latest.bin
+      run: |
+        mkdir -p firmware
+        BIN=$(find build/automatic -maxdepth 1 -name "*.bin" | head -n1)
+        echo "Binario => $BIN"
+        if [ -z "$BIN" ]; then
+          echo "❌ No se generó ningún .bin"; exit 1
+        fi
+        cp "$BIN" firmware/latest.bin
+        git config user.name  "github-actions[bot]"
+        git config user.email "actions@github.com"
+        git add firmware/latest.bin
+        git commit -m "🔨 Build latest.bin"
+        git push
