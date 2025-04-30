@@ -1,11 +1,10 @@
-# .github/workflows/ci.yml
 name: Build OTA Binary
 
 on:
   push:
     paths:
-      - 'sketches/**'
-      - '.github/workflows/ci.yml'
+      - "sketches/**"
+      - ".github/workflows/ci.yml"
 
 jobs:
   build:
@@ -33,18 +32,23 @@ jobs:
           arduino-cli lib install "Adafruit HTU21DF Library"
           arduino-cli lib install "Adafruit NeoPixel"
 
-      - name: Compile sketch into firmware/
+      # Arduino-CLI exige que la carpeta y el archivo principal tengan el mismo nombre.
+      # Copiamos automatic.ino a una carpeta temporal que cumpla esa regla.
+      - name: Prepare sketch folder
+        run: |
+          mkdir -p build/automatic
+          cp sketches/automatic.ino build/automatic/automatic.ino
+
+      - name: Compile sketch
         run: |
           mkdir -p firmware
-          echo "📦 Compiling sketches/automatic.ino"
           arduino-cli compile \
             --fqbn esp32:esp32:esp32 \
             --output-dir firmware \
-            sketches/automatic.ino
+            build/automatic
 
       - name: Publish latest.bin
         run: |
-          echo "📦 Moving bin to latest.bin"
           mv firmware/*.bin firmware/latest.bin
           git config user.name "github-actions[bot]"
           git config user.email "actions@github.com"
