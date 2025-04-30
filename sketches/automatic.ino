@@ -1,1 +1,0 @@
-¡Hola! ¿En qué puedo ayudarte con Arduino hoy?
