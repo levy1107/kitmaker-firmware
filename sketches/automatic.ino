@@ -110,9 +110,7 @@ void loop() {
   display.display();
 
   if (temp > 35) {
-    digitalWrite(BUZZER_PIN, HIGH);
-    delay(1000);
-    digitalWrite(BUZZER_PIN, LOW);
+    tone(BUZZER_PIN, 1000, 1000); // Active buzzer using tone (frequency, duration)
   }
 
   // Detección de botón largo para OTA pull
