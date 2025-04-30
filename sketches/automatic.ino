@@ -109,10 +109,7 @@ void loop() {
   display.display();
 
   if (temp > 35) {
-    tone(BUZZER_PIN, 1000, 1000); // Active buzzer using tone (frequency, duration)
-    for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-      pixels.setPixelColor(i, pixels.Color(255,0,0)); // Set all pixels to red
-    }
+    pixels.setPixelColor(0, pixels.Color(0,255,0)); // Set first pixel to green
     pixels.show();
   }
 
