@@ -16,6 +16,7 @@
 #define NEOPIXEL_COUNT  4
 #define BUTTON_PIN      15
 #define BUTTON_COLOR_PIN 0
+#define BUZZER_PIN      12
 // ——————————————————
 
 // ————— Wi-Fi & OTA —————
@@ -46,6 +47,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(BUTTON_COLOR_PIN, INPUT_PULLUP);
+  pinMode(BUZZER_PIN, OUTPUT);
   Wire.begin();
 
   // Init OLED
@@ -106,6 +108,12 @@ void loop() {
   display.setCursor(0, 10);  display.printf("H: %.1f %%", hum);
   display.setCursor(0, 20);  display.printf("LDR: %4d", ldrRaw);
   display.display();
+
+  if (temp > 35) {
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(1000);
+    digitalWrite(BUZZER_PIN, LOW);
+  }
 
   // Detección de botón largo para OTA pull
   if (digitalRead(BUTTON_PIN) == LOW) {
