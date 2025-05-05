@@ -21,7 +21,7 @@
 const char* ssid         = "PoloTics";
 const char* password     = "P4L4T3cs";
 const char* FIRMWARE_URL =
-  "https://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin";
+  ""http://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin";";
 // ——————————————————————
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
