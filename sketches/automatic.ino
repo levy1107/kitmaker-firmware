@@ -56,7 +56,6 @@ void setup() {
     while (1);
   }
   showMessage("Iniciando...", nullptr, 2);
-  delay(1000);
 
   // Init HTU21D
   if (!htu.begin()) {
@@ -66,7 +65,18 @@ void setup() {
 
   // Init NeoPixels
   pixels.begin();
-
+  pixels.clear();
+  uint32_t colors[] = {pixels.Color(255, 255, 0), pixels.Color(0, 0, 255), pixels.Color(255, 0, 0)};
+  int colorIndex = 0;
+  for (int i = 0; i < 6; i++) {
+    for (int p = 0; p < NEOPIXEL_COUNT; p++) {
+      pixels.setPixelColor(p, colors[colorIndex % 3]);
+    }
+    pixels.show();
+    colorIndex++;
+    delay(500);
+  }
+  
   // Conecta Wi-Fi
   showMessage("Conectando", "a Wi-Fi", 2);
   WiFi.begin(ssid, password);
