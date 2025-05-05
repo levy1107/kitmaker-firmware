@@ -6,6 +6,8 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_HTU21DF.h>
 #include <Adafruit_NeoPixel.h>
+#define FW_VERSION "2025‑05‑05‑01"
+
 
 // ————— Hardware —————
 #define SCREEN_WIDTH    128
@@ -49,6 +51,8 @@ void setup() {
   pinMode(BUTTON_COLOR_PIN, INPUT_PULLUP);
   pinMode(BUZZER_PIN, OUTPUT);
   Wire.begin();
+  Serial.println(F("Firmware " FW_VERSION));
+
 
   // Init OLED
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {

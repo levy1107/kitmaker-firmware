@@ -26,36 +26,38 @@ def fetch_current():
 def generate_updated_code(current_code: str, user_request: str) -> str:
     """
     Envía a ChatGPT el código actual y la instrucción de cambio,
-    usando un prompt que describe todo el hardware de la placa ESP32 KitMaker 2.0.
+    usando un prompt que describe todo el hardware de la placa ESP32 KitMaker 2.0.
     """
     system_msg = (
-        "Eres un asistente que responde únicamente con código válido para la placa "
-        "ESP32 KitMaker 2.0. No agregues texto extra ni explicaciones; devuelve solo "
-        "el contenido del archivo .ino.\n\n"
-        "La placa ESP32 KitMaker 2.0 tiene los siguientes pines y componentes:\n"
-        "  • Microcontrolador: ESP32\n"
-        "  • GPIO39: Sensor de luz TEMT6000 (ADC)\n"
-        "  • I2C (SDA=GPIO21, SCL=GPIO22): HTU21D (temp/humedad) y OLED 128×64\n"
-        "  • GPIO14: Sensor de vibración Tilt BL2500\n"
-        "  • GPIO0: Pulsador izquierdo\n"
-        "  • GPIO15: Pulsador medio (usado para OTA pull 5 s)\n"
-        "  • GPIO13: Pulsador derecho\n"
-        "  • GPIO36: Switch medir batería (ADC)\n"
-        "  • GPIO27: 4 NeoPixels programables\n"
-        "  • GPIO12: Buzzer pasivo\n"
-        "  • Puerto MicroUSB CP2102 para carga y programación\n"
-        "  • Indicadores LED de carga/RxTx, JST para batería, RJ9, etc.\n\n"
-        "Incluye siempre la inicialización de Wi-Fi (SSID: Polotics, P4L4T3cs) "
-        "y la lógica de Pull-OTA desde:\n"
-        "  https://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin\n"
+        "Eres un asistente que responde exclusivamente con código válido para la placa "
+        "ESP32 KitMaker 2.0. Devuelve únicamente el contenido completo del archivo .ino, "
+        "sin comentarios adicionales ni explicaciones.\n\n"
+        "La placa dispone de:\n"
+        "  • ESP32 MCU\n"
+        "  • GPIO39  → sensor de luz TEMT6000 (ADC)\n"
+        "  • I2C (SDA=21, SCL=22) → HTU21D y OLED 128×64\n"
+        "  • GPIO14  → sensor de vibración Tilt BL2500\n"
+        "  • GPIO0   → pulsador izquierdo\n"
+        "  • GPIO15  → pulsador medio (OTA 5 s)\n"
+        "  • GPIO13  → pulsador derecho\n"
+        "  • GPIO36  → medición de batería (ADC)\n"
+        "  • GPIO27  → 4 NeoPixels programables\n"
+        "  • GPIO12  → buzzer pasivo\n\n"
+        "Incluye SIEMPRE:\n"
+        "  • Configuración Wi‑Fi (SSID: Polotics, pass: P4L4T3cs)\n"
+        "  • Lógica de Pull‑OTA desde:\n"
+        "    https://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin\n"
+        "  • Una línea #define FW_VERSION \"YYYYMMDDHHMM\" al inicio y "
+        "   asegúrate de incrementar su valor en cada modificación para forzar "
+        "   que el binario resultante sea diferente.\n"
     )
 
     user_msg = (
         "Aquí está el código actual:\n```cpp\n"
         f"{current_code}\n```\n\n"
-        "Por favor, aplica esta modificación:\n"
+        "Aplica esta modificación:\n"
         f"{user_request}\n\n"
-        "Devuélveme únicamente el archivo .ino completo dentro de un solo bloque de código."
+        "Devuélveme solo el nuevo archivo .ino completo dentro de un único bloque de código."
     )
 
     resp = openai.ChatCompletion.create(
@@ -67,8 +69,9 @@ def generate_updated_code(current_code: str, user_request: str) -> str:
     )
 
     code_block = resp.choices[0].message.content
-    # Limpieza de delimitadores
+    # Extrae el código sin los delimitadores ```cpp ... ```
     return code_block.strip().strip("```").replace("cpp\n", "")
+
 
 def commit_updated_code(new_code: str, sha: str):
     """
