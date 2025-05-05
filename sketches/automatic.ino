@@ -5,7 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_HTU21DF.h>
-#define FW_VERSION "202505051213" // Version updated
+#define FW_VERSION "202505051315" // Version updated
 
 // ————— Hardware —————
 #define SCREEN_WIDTH    128
@@ -17,12 +17,13 @@
 #define BUZZER_PIN      12
 // ——————————————————
 
-// ————— Wi-Fi & OTA —————
+// ————— Wi‑Fi & OTA —————
 const char* ssid         = "PoloTics";
 const char* password     = "P4L4T3cs";
 const char* FIRMWARE_URL =
-  ""http://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin";";
+  "http://raw.githubusercontent.com/levy1107/kitmaker-firmware/main/firmware/latest.bin";
 // ——————————————————————
+
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_HTU21DF htu;
