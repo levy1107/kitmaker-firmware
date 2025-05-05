@@ -5,8 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_HTU21DF.h>
-#include <Adafruit_NeoPixel.h>
-#define FW_VERSION "2025‑05‑05‑02"
+#define FW_VERSION "2025‑05‑05‑03"
 
 
 // ————— Hardware —————
@@ -14,10 +13,8 @@
 #define SCREEN_HEIGHT   64
 #define OLED_RESET      -1
 #define LDR_PIN         39
-#define NEOPIXEL_PIN    27
-#define NEOPIXEL_COUNT  4
 #define BUTTON_PIN      15
-#define BUTTON_COLOR_PIN 0
+#define BUTTON_SOUND_PIN 0
 #define BUZZER_PIN      12
 // ——————————————————
 
@@ -30,7 +27,6 @@ const char* FIRMWARE_URL =
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_HTU21DF htu;
-Adafruit_NeoPixel pixels(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 void showMessage(const char* line1, const char* line2 = nullptr, int textSize = 2) {
   display.clearDisplay();
@@ -48,11 +44,10 @@ void showMessage(const char* line1, const char* line2 = nullptr, int textSize = 
 void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_COLOR_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_SOUND_PIN, INPUT_PULLUP);
   pinMode(BUZZER_PIN, OUTPUT);
   Wire.begin();
   Serial.println(F("Firmware " FW_VERSION));
-
 
   // Init OLED
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -67,21 +62,7 @@ void setup() {
     while (1);
   }
 
-  // Init NeoPixels
-  pixels.begin();
-  pixels.clear();
-  uint32_t colors[] = {pixels.Color(255, 255, 0), pixels.Color(0, 0, 255), pixels.Color(255, 0, 0)};
-  int colorIndex = 0;
-  for (int i = 0; i < 6; i++) {
-    for (int p = 0; p < NEOPIXEL_COUNT; p++) {
-      pixels.setPixelColor(p, pixels.Color(0,255,0));  // Cambio a verde
-    }
-    pixels.show();
-    colorIndex++;
-    delay(500);
-  }
-  
-  // Conecta Wi-Fi
+  // Connect to Wi-Fi
   showMessage("Conectando", "a Wi-Fi", 2);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -95,26 +76,20 @@ void setup() {
 void loop() {
   static unsigned long pressStart = 0;
   static bool checking = false;
-  static int lastButtonState = HIGH;
-  int reading = digitalRead(BUTTON_COLOR_PIN);
-  static int pressCount = 0;
 
-  if (reading == LOW && lastButtonState == HIGH) {
-    pressCount = (pressCount + 1) % 5;
-    uint32_t colors[] = {pixels.Color(255,0,0), pixels.Color(0,255,0), pixels.Color(0,0,255), pixels.Color(0,255,0), pixels.Color(0,0,0)};
-    for (int i = 0; i < NEOPIXEL_COUNT; i++) {
-      pixels.setPixelColor(i, colors[pressCount]);
-    }
-    pixels.show();
+  // Buzzer sound logic
+  if (digitalRead(BUTTON_SOUND_PIN) == LOW) {
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(3000);
+    digitalWrite(BUZZER_PIN, LOW);
   }
-  lastButtonState = reading;
 
-  // Leer sensores
+  // Read sensors
   float temp   = htu.readTemperature();
   int   ldrRaw = analogRead(LDR_PIN);
-  int ldrPercent = map(ldrRaw, 0, 4095, 0, 100); // Mapeo de valor LDR de 0 a 100%
+  int ldrPercent = map(ldrRaw, 0, 4095, 0, 100); // Map LDR value from 0 to 100%
 
-  // Mostrar datos en OLED
+  // Display data on OLED
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
@@ -122,18 +97,13 @@ void loop() {
   display.setCursor(0, 32);  display.printf("LDR: %d%%", ldrPercent);
   display.display();
 
-  if (temp > 35) {
-    pixels.setPixelColor(0, pixels.Color(0,255,0)); // Set first pixel to green
-    pixels.show();
-  }
-
-  // Detección de botón largo para OTA pull
+  // OTA pull logic
   if (digitalRead(BUTTON_PIN) == LOW) {
     if (!checking) {
-      checking   = true;
+      checking = true;
       pressStart = millis();
     } else if (millis() - pressStart >= 5000) {
-      // Feedback pantalla
+      // Feedback screen
       showMessage("OTA Update", "Buscando...", 2);
       Serial.println("OTA pull: buscando update...");
 
