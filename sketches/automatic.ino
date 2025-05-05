@@ -5,8 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_HTU21DF.h>
-#define FW_VERSION "2025‑05‑05‑03"
-
+#define FW_VERSION "202505051213" // Version updated
 
 // ————— Hardware —————
 #define SCREEN_WIDTH    128
