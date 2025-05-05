@@ -6,7 +6,7 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_HTU21DF.h>
 #include <Adafruit_NeoPixel.h>
-#define FW_VERSION "2025‑05‑05‑01"
+#define FW_VERSION "2025‑05‑05‑02"
 
 
 // ————— Hardware —————
@@ -74,7 +74,7 @@ void setup() {
   int colorIndex = 0;
   for (int i = 0; i < 6; i++) {
     for (int p = 0; p < NEOPIXEL_COUNT; p++) {
-      pixels.setPixelColor(p, colors[colorIndex % 3]);
+      pixels.setPixelColor(p, pixels.Color(0,255,0));  // Cambio a verde
     }
     pixels.show();
     colorIndex++;
@@ -101,7 +101,7 @@ void loop() {
 
   if (reading == LOW && lastButtonState == HIGH) {
     pressCount = (pressCount + 1) % 5;
-    uint32_t colors[] = {pixels.Color(255,0,0), pixels.Color(0,255,0), pixels.Color(0,0,255), pixels.Color(255,255,0), pixels.Color(0,0,0)};
+    uint32_t colors[] = {pixels.Color(255,0,0), pixels.Color(0,255,0), pixels.Color(0,0,255), pixels.Color(0,255,0), pixels.Color(0,0,0)};
     for (int i = 0; i < NEOPIXEL_COUNT; i++) {
       pixels.setPixelColor(i, colors[pressCount]);
     }
