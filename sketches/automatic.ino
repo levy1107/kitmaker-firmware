@@ -6,9 +6,8 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_HTU21DF.h>
-#include <Adafruit_NeoPixel.h>
 
-#define FW_VERSION "202505051350"   // ⇦  ponle fecha‑hora nueva en cada build
+#define FW_VERSION "202505051244"   // ⇦  ponle fecha‑hora nueva en cada build
 
 // ─── Hardware ──────────────────────────────────────────────
 #define SCREEN_WIDTH     128
@@ -16,8 +15,6 @@
 #define OLED_RESET        -1
 
 #define LDR_PIN           39
-#define NEOPIXEL_PIN      27
-#define NEOPIXEL_COUNT     4
 
 #define OTA_BUTTON_PIN    15   // pulsa 5 s para OTA
 #define COLOR_BUTTON_PIN   0   // ciclo de colores
@@ -35,7 +32,6 @@ const char* FIRMWARE_URL =
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_HTU21DF  htu;
-Adafruit_NeoPixel pixels(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 void showMessage(const char* l1, const char* l2 = nullptr, uint8_t sz = 2) {
   display.clearDisplay();
@@ -64,19 +60,6 @@ void setup() {
 
   if (!htu.begin()) { showMessage("HTU21D FAIL"); while (true); }
 
-  pixels.begin();
-  pixels.clear();
-  pixels.show();
-
-  // animación intermitente al arrancar
-  uint32_t bootCol[3] = { pixels.Color(255,255,0),
-                          pixels.Color(0,0,255),
-                          pixels.Color(255,0,0) };
-  for (int i = 0; i < 6; ++i) {
-    for (int p = 0; p < NEOPIXEL_COUNT; ++p) pixels.setPixelColor(p, bootCol[i%3]);
-    pixels.show(); delay(500);
-  }
-
   showMessage("Wi‑Fi", "conectando");
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print('.'); }
@@ -85,19 +68,6 @@ void setup() {
 }
 
 void loop() {
-  /* ───────── Color button (GPIO0) ───────── */
-  static int lastColorState = HIGH, pressCnt = 0;
-  int reading = digitalRead(COLOR_BUTTON_PIN);
-  if (reading == LOW && lastColorState == HIGH) {
-      pressCnt = (pressCnt + 1) % 5;
-      uint32_t col[5] = { pixels.Color(255,0,0), pixels.Color(0,255,0),
-                          pixels.Color(0,0,255), pixels.Color(255,255,0),
-                          pixels.Color(0,0,0) };
-      for (int i = 0; i < NEOPIXEL_COUNT; ++i) pixels.setPixelColor(i, col[pressCnt]);
-      pixels.show();
-  }
-  lastColorState = reading;
-
   /* ───────── Sensores y OLED ───────── */
   float t = htu.readTemperature();
   int   ldr = analogRead(LDR_PIN);
